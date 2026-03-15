@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Tạo nhóm sản phẩm mới</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Tạo nhóm sản phẩm</button>
+</form>
+{% endblock %}

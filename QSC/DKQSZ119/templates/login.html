@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Đăng nhập{% endblock %}
+
+{% block content %}
+<style>
+
+
+    body {
+        background: linear-gradient(to right, #c9d6ff, #e2e2e2);
+        font-family: 'Quicksand', sans-serif;
+    }
+
+    .login-container {
+        background-color: #ffffff;
+        padding: 40px 50px;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        width: 420px;
+        text-align: center;
+        margin: 60px auto;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+    }
+
+    .login-container:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .app-title {
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    h2 {
+        margin-top: 0;
+        margin-bottom: 25px;
+        color: #111827;
+        font-weight: 600;
+        font-size: 26px;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    form p {
+        margin-bottom: 18px;
+        text-align: left;
+        font-size: 15px;
+        color: #374151;
+    }
+
+    input {
+        padding: 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    button {
+        background: linear-gradient(to right, #3b82f6, #2563eb);
+        color: white;
+        border: none;
+        padding: 12px;
+        font-size: 16px;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: opacity 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+        opacity: 0.95;
+        transform: translateY(-1px);
+    }
+
+    .login-icon {
+        font-size: 42px;
+        color: #3b82f6;
+        margin-bottom: 12px;
+        animation: bounceIn 0.6s ease;
+    }
+
+    @keyframes bounceIn {
+        0% { transform: scale(0.9); opacity: 0; }
+        60% { transform: scale(1.05); opacity: 1; }
+        100% { transform: scale(1); }
+    }
+</style>
+<div class="login-container">
+    <div class="login-icon">🔐</div>
+    <div class="app-title">PHẦN MỀM QUẢN LÝ QUÂN SỐ VÀ ĐIỀU ĐỘ SẢN XUẤT NHÀ MÁY Z119</div>
+    <h2>Đăng nhập</h2>
+    <form method="post">
+        {% csrf_token %}
+       	{{ form.as_p }}
+        <button type="submit">🚀 Vào hệ thống</button>
+    </form>
+</div>
+{% endblock %}

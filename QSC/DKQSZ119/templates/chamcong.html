@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% load static custom_filters %}
+
+{% block title %}Bảng Chấm Công{% endblock %}
+
+{% block content %}
+<style>
+  main, .container, .content, .page-wrapper {
+    max-width: 100% !important;
+    width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+    font-family: "Times New Roman", serif;
+  }
+
+  .unit {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 10px;
+  }
+
+  .header {
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .header h2 {
+    margin: 6px 0;
+    font-size: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .toolbar a {
+    text-decoration: none;
+    background: #007bff;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  .toolbar a:hover {
+    background: #0056b3;
+  }
+
+  .btn-success {
+    background: #198754 !important;
+  }
+
+  .btn-success:hover {
+    background: #146c43 !important;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #000;
+    font-size: 13px;
+  }
+
+  th, td {
+    border: 1px solid #000;
+    text-align: center;
+    padding: 3px 5px;
+  }
+
+  th {
+    background: #f7f7f7;
+  }
+
+  td.name {
+    text-align: left;
+    padding-left: 6px;
+  }
+
+  .signatures {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    margin-top: 25px;
+  }
+
+  .note {
+    margin: 10px;
+    font-size: 13px;
+  }
+
+  @media print {
+    .toolbar { display: none; }
+    body { margin: 0; }
+    table { font-size: 12px; }
+  }
+</style>
+
+<div>
+  <div class="unit">Đơn vị: {{ unit_name|default:"Phòng Kế hoạch" }}</div>
+
+  <div class="header">
+    <h2>BẢNG CHẤM CÔNG</h2>
+    <div>(Tháng {{ month }}/{{ year }})</div>
+  </div>
+
+  <div class="toolbar">
+    <div style="display:flex; gap:8px;">
+      <a href="?month={{ prev_month }}">← Tháng trước</a>
+      <a href="{% url 'export_attendance_excel' %}?month={{ month }}&year={{ year }}" class="btn-success">📥 Xuất Excel</a>
+      <a href="?month={{ next_month }}">Tháng sau →</a>
+    </div>
+
+    <form method="get">
+      <label for="month">Chọn tháng:</label>
+      <input type="month" name="month" id="month" value="{{ year }}-{{ month|stringformat:'02d' }}">
+      <button type="submit">Xem</button>
+    </form>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th rowspan="2">STT</th>
+        <th rowspan="2" style="width:18%;">Họ và tên</th>
+        <th rowspan="2" style="width:12%;">Chức vụ</th>
+        <th colspan="{{ days|length }}">NGÀY TRONG THÁNG</th>
+        <th colspan="7">QUY RA CÔNG</th>
+      </tr>
+      <tr>
+        {% for d in days %}
+          <th>{{ d }}</th>
+        {% endfor %}
+        <th>SP</th>
+        <th>TG</th>
+        <th>Cơm</th>
+        <th>100%</th>
+        <th>...%</th>
+        <th>CH</th>
+        <th>Khác</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in users %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td class="name">{{ item.worker.name }}</td>
+          <td>{{ item.worker.position }}</td>
+          {% for d in days %}
+            <td>{{ item.attendance|get_item:d }}</td>
+          {% endfor %}
+          <td>{{ item.total_present }}</td>
+          <td>{{ item.total_presenttg }}</td>
+          <td>{{ item.total_meal }}</td>
+          <td>{{ item.total_pregnancy }}</td>
+          <td>{{ item.total_leave }}</td>
+          <td>{{ item.total_curve }}</td>
+          <td>{{ item.total_other }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="{{ days|length|add:10 }}">Không có dữ liệu chấm công</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="signatures">
+    <div>
+      <b>GIÁM ĐỐC</b><br>
+      <i>(Ký, ghi rõ họ tên)</i>
+    </div>
+    <div>
+      <b>PHỤ TRÁCH A-B</b><br>
+      <i>(Ký, ghi rõ họ tên)</i>
+    </div>
+    <div>
+      <b>NGƯỜI CHẤM CÔNG</b><br>
+      <i>(Ký, ghi rõ họ tên)</i>
+    </div>
+  </div>
+
+  <div class="note">
+    Ký hiệu chấm công: SP; +; CT; P; TS; KT; CH.
+  </div>
+</div>
+{% endblock %}

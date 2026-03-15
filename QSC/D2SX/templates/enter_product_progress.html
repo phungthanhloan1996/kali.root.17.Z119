@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<h2 style="margin-bottom: 20px;">Nhập tiến độ sản phẩm - Ngày: {{ selected_date }}</h2>
+
+<!-- Chọn ngày -->
+<form method="get" style="margin-bottom: 30px; display:flex; align-items:center; gap:10px;">
+    <label for="selected_date">Chọn ngày:</label>
+    <input type="date" name="selected_date" id="selected_date" value="{{ selected_date }}" style="padding:5px;">
+    <button type="submit" style="padding:6px 12px; background-color:#007BFF; color:white; border:none; border-radius:4px;">Xem</button>
+</form>
+
+<form method="post">
+    {% csrf_token %}
+    <div style="display: flex; flex-direction: column; gap:20px;">
+        {% for group, products in product_groups.items %}
+            <div style="background-color:#f9f9f9; border-radius:8px; padding:12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);">
+                <h3 style="margin-bottom:10px; color:#333; font-size:1rem;">{{ group.name }}</h3>
+
+                <div style="display: flex; flex-wrap: wrap; gap:12px;">
+                    {% for item in products %}
+                        {% with progress=item.progress %}
+                        <div style="background-color:white; border-radius:6px; padding:10px; flex: 1 1 200px; box-shadow:0 1px 3px rgba(0,0,0,0.08); font-size:0.85rem;">
+                            <div style="font-weight:bold; margin-bottom:6px;">{{ item.product.name }}</div>
+
+                            <label style="font-size:0.8rem;">Thực tế (%)</label>
+                            <input type="number" name="real_{{ item.product.id }}" min="0" max="100"
+                                   value="{{ progress.progress_percent|default:progress.progress_percent }}"
+                                   style="width:100%; padding:4px; margin-bottom:6px; border-radius:3px; border:1px solid #ccc; font-size:0.85rem;">
+
+                            <label style="font-size:0.8rem;">Kế hoạch (%)</label>
+                            <input type="number" name="plan_{{ item.product.id }}" min="0" max="100"
+                                   value="{{ progress.planned_progress_percent|default:progress.planned_progress_percent }}"
+                                   style="width:100%; padding:4px; margin-bottom:6px; border-radius:3px; border:1px solid #ccc; font-size:0.85rem;">
+
+                            <label style="font-size:0.8rem;">Tình trạng nghiệm thu:</label>
+                            <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:4px; font-size:0.8rem; margin-bottom:6px;">
+                              <label><input type="checkbox" name="factory_{{ item.product.id }}" {% if progress.approved_factory %}checked{% endif %}> Nhà máy</label>
+                              <label><input type="checkbox" name="department_{{ item.product.id }}" {% if progress.approved_department %}checked{% endif %}> Cục</label>
+                              <label><input type="checkbox" name="qc_{{ item.product.id }}" {% if progress.approved_qc %}checked{% endif %}> QC</label>
+                              <label><input type="checkbox" name="handover_{{ item.product.id }}" {% if progress.handed_over %}checked{% endif %}> Bàn giao</label>
+                            </div>
+
+                            <!-- Thanh tiến độ -->
+                            <div style="margin-top:6px;">
+                                <div style="background-color:#eee; height:6px; border-radius:3px; overflow:hidden;">
+                                    <div style="width:{{ progress.progress_percent|default:0 }}%; background-color:#28a745; height:6px;"></div>
+                                </div>
+                                <small>Thực tế: {{ progress.progress_percent|default:0 }}%</small>
+                            </div>
+                            <div style="margin-top:4px;">
+                                <div style="background-color:#eee; height:6px; border-radius:3px; overflow:hidden;">
+                                    <div style="width:{{ progress.planned_progress_percent|default:0 }}%; background-color:#ffc107; height:6px;"></div>
+                                </div>
+                                <small>Kế hoạch: {{ progress.planned_progress_percent|default:0 }}%</small>
+                            </div>
+                            <div style="font-size:0.8rem; margin-bottom:6px;">
+                                <strong>Bước hiện tại:</strong>
+                                {% if item.steps_info.current_step %}
+                                    {{ item.steps_info.current_step.name }} ({{ item.steps_info.current_step.department_in_charge }})
+                                {% else %}
+                                    Chưa có bước hoàn thành
+                                {% endif %}
+                            </div>
+                            <div style="font-size:0.8rem; margin-bottom:6px;">
+                                <strong>Bước tiếp theo:</strong>
+                                {% if item.steps_info.next_step %}
+                                    {{ item.steps_info.next_step.name }} ({{ item.steps_info.next_step.department_in_charge }})
+                                {% else %}
+                                    Hoàn tất
+                                {% endif %}
+                            </div>
+
+                        </div>
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% empty %}
+            <p style="font-size:0.9rem;">Không có sản phẩm nào.</p>
+        {% endfor %}
+    </div>
+
+    <div style="margin-top:20px; text-align:right;">
+        <button type="submit" style="padding:8px 16px; background-color:#007BFF; color:white; border:none; border-radius:5px; font-weight:bold;">Lưu tiến độ</button>
+    </div>
+</form>
+
+{% endblock %}

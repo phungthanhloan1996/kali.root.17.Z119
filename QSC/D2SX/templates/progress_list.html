@@ -1,0 +1,384 @@
+{% extends 'base.html' %}
+{% load number_format custom_filter_app3 humanize %}
+
+{% block content %}
+<style>
+    /* ------------------------------------------- */
+    /* 1. Global & Reset */
+    /* ------------------------------------------- */
+    :root {
+        --primary-color: #0d6efd;
+        --secondary-color: #6c757d;
+        --light-blue: #e7f1ff;
+        --dark-blue: #0d3b66;
+        --hover-blue: #0b5ed7;
+        --total-bg: #cfe2ff;
+        --border-color: #dee2e6;
+
+        /* CÁC BIẾN CẦN KIỂM TRA CHO KHOẢNG CÁCH */
+        --base-header-height: 120px;
+        --top-offset: 20px;
+
+        /* TỶ LỆ CỐ ĐỊNH */
+        --sidebar-ratio: 20%;
+        --content-ratio: 80%;
+        --content-padding: 5px;
+    }
+
+    body, html {
+        margin: 0; padding: 0;
+        width: 100%; min-height: 100%;
+        background-color: #f8f9fa;
+        overflow-x: hidden; /* NGĂN CUỘN NGANG TỔNG THỂ */
+    }
+
+    /* ------------------------------------------- */
+    /* 6. Layout Wrapper & Responsiveness - GHI ĐÈ FULL WIDTH */
+    /* ------------------------------------------- */
+    .content-wrapper {
+        /* GHI ĐÈ MẠNH MẼ ĐỂ KHÔNG BỊ GIỚI HẠN BỞI .container TRONG BASE.HTML */
+        width: 100vw; /* Chiếm 100% chiều rộng viewport */
+        position: relative;
+        left: 50%; /* Dịch chuyển 50% sang phải */
+        transform: translateX(-50%); /* Kéo lại 50% để căn giữa, đạt hiệu quả full-width */
+        max-width: none !important; /* Bỏ giới hạn max-width */
+
+        margin: 0;
+        padding: 0;
+    }
+
+    .sidebar {
+        /* SideBar CỐ ĐỊNH 20% */
+        position: fixed;
+        top: calc(var(--base-header-height) + var(--top-offset));
+        bottom: 0;
+        left: 0;
+        right: auto;
+
+        width: var(--sidebar-ratio); /* CHIẾM CHÍNH XÁC 20% */
+
+        height: calc(100vh - var(--base-header-height) - var(--top-offset));
+        background: white;
+        padding: var(--content-padding);
+        border-right: 1px solid var(--border-color);
+        box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        overflow-y: auto;
+        box-sizing: border-box;
+        z-index: 100;
+    }
+
+    /* KHẮC PHỤC MẤT CHỮ TRONG SIDEBAR BẰNG CÁCH CHO PHÉP XUỐNG DÒNG */
+    .sidebar-list a {
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    .main-content {
+        /* Main Content CHIẾM CHÍNH XÁC 80% */
+        margin-left: var(--sidebar-ratio);
+        width: var(--content-ratio);
+
+        /* CHỈ XỬ LÝ PADDING DỌC Ở ĐÂY */
+        padding-top: calc(var(--base-header-height) + var(--top-offset) + var(--content-padding));
+        padding-bottom: var(--content-padding);
+
+        /* LOẠI BỎ PADDING NGANG ĐỂ NÓ CHIẾM ĐÚNG 80% */
+        padding-left: 0;
+        padding-right: 0;
+
+        min-height: calc(100vh - var(--base-header-height) - var(--top-offset));
+        box-sizing: border-box;
+    }
+
+    /* LỚP NỘI DUNG ĐỂ XỬ LÝ KHOẢNG TRẮNG BÊN TRONG 80% */
+    .main-content-inner {
+        padding-left: var(--content-padding);
+        padding-right: var(--content-padding);
+    }
+
+    /* ------------------------------------------- */
+    /* 5. Table Styling - Tối ưu cho 80% chiều ngang */
+    /* ------------------------------------------- */
+    .responsive-table-container { margin-bottom: 20px; }
+
+    table {
+        width: 100%; /* Đảm bảo bảng co giãn 100% trong .main-content-inner */
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        font-size: 0.85rem;
+        border-collapse: collapse;
+    }
+
+    th, td { text-align: center; vertical-align: middle; padding: 8px 6px; border: 1px solid var(--border-color); }
+
+    /* Điều chỉnh độ rộng cột để tổng = 100% */
+    /* Tổng 5 cột cố định: 5 + 30 + 10 + 10 + 30 = 85%. Còn 15% chia 6 cột */
+    .table-detail th:nth-child(1), .table-detail td:nth-child(1) { width: 5%; } /* # */
+    .table-detail th:nth-child(2), .table-detail td:nth-child(2) { width: 30%; text-align: left; } /* Sản phẩm (tăng) */
+    .table-detail th:nth-child(3), .table-detail td:nth-child(3) { width: 10%; } /* Đơn giá */
+
+    .table-detail th:nth-child(4), .table-detail td:nth-child(4) { width: 2.5%; } /* Đã thực hiện (Fixed: 2.5%) */
+    .table-detail th:nth-child(5), .table-detail td:nth-child(5) { width: 2.5%; } /* Kế hoạch tháng (Fixed: 2.5%) */
+    .table-detail th:nth-child(6), .table-detail td:nth-child(6) { width: 2.5%; } /* Tiến độ (%) (Fixed: 2.5%) */
+    .table-detail th:nth-child(7), .table-detail td:nth-child(7) { width: 2.5%; } /* Kế hoạch (%) (Fixed: 2.5%) */
+    .table-detail th:nth-child(8), .table-detail td:nth-child(8) { width: 2.5%; } /* Vào xưởng (Fixed: 2.5%) */
+    .table-detail th:nth-child(9), .table-detail td:nth-child(9) { width: 2.5%; } /* Ra xưởng (Fixed: 2.5%) */
+
+    .table-detail th:nth-child(10), .table-detail td:nth-child(10) { width: 10%; } /* Chi tiết (tăng) */
+    .table-detail th:nth-child(11), .table-detail td:nth-child(11) { width: 30%; } /* Ghi chú (tăng mạnh) */
+    /* Tổng cộng: 5 + 30 + 10 + (6*2.5) + 10 + 30 = 100% */
+
+    /* Các phần CSS khác giữ nguyên */
+    h2, h3 { color: var(--dark-blue); font-weight: 700; }
+    h2 { font-size: 1.5rem; margin-bottom: 25px; border-bottom: 2px solid var(--light-blue); padding-bottom: 5px; }
+    h3 { font-size: 1.15rem; margin-top: 30px; margin-bottom: 15px; color: var(--primary-color); }
+    h5 { font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; color: var(--secondary-color); }
+
+    .btn-action {
+        border-radius: 8px; font-size: 0.9rem; padding: 10px 15px; transition: 0.3s ease;
+        background-color: var(--primary-color); border-color: var(--primary-color); color: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-decoration: none;
+    }
+    .btn-action:hover { background: var(--hover-blue); border-color: var(--hover-blue); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); color: white; }
+    .btn-sm { padding: 4px 10px; font-size: 0.8rem; border-radius: 6px; }
+
+    .summary-box, .card-summary {
+        background: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        margin-bottom: 25px; font-size: 0.95rem; border-left: 5px solid var(--primary-color);
+    }
+    .card-summary { border-left: none; }
+    .summary-box strong { color: var(--dark-blue); font-weight: 600; }
+    .summary-item { margin-bottom: 5px; }
+    thead { background: var(--primary-color); color: white; }
+    tbody tr:hover { background: var(--light-blue); transition: background 0.2s; }
+    .total-row { font-weight: bold; background: var(--total-bg); color: var(--dark-blue); }
+
+    .sidebar-list { list-style: none; padding: 0; margin: 0; }
+    .sidebar-list a {
+        font-size: 0.85rem; display: block; padding: 8px 10px; color: var(--dark-blue);
+        text-decoration: none; border-radius: 6px; transition: 0.2s; margin-bottom: 4px;
+    }
+    .sidebar-list a:hover, .sidebar-list a.active { background: var(--primary-color); color: white; }
+
+    .note-text {
+        font-size: 0.8rem; color: var(--secondary-color); display: block;
+        max-height: 38px; overflow: hidden; text-overflow: ellipsis;
+        white-space: normal; line-height: 1.3;
+    }
+
+    /* Mobile adjustments - Khôi phục flex cho mobile */
+    @media (max-width: 992px) {
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            width: 100%; /* Bỏ ghi đè full-width trên mobile */
+            left: auto;
+            transform: none;
+            max-width: none;
+        }
+
+        .main-content {
+            margin-left: 0;
+            width: 100%;
+            padding-top: var(--content-padding);
+        }
+        .main-content-inner {
+            padding-left: var(--content-padding);
+            padding-right: var(--content-padding);
+        }
+
+        .sidebar {
+            position: relative;
+            width: 100%;
+            height: auto;
+            top: 0; left: 0; bottom: auto;
+            border: 1px solid var(--border-color);
+            margin-bottom: 15px;
+            overflow-y: hidden;
+            border-radius: 10px;
+            box-shadow: none;
+        }
+        .sidebar-list a {
+            word-break: normal;
+        }
+
+        .sidebar h5 { display: none; }
+        .sidebar-list { display: flex; overflow-x: auto; white-space: nowrap; padding-bottom: 5px; }
+        .sidebar-list a { flex-shrink: 0; margin-right: 8px; }
+        h2 { font-size: 1.3rem; }
+
+        /* BẮT BUỘC SCROLL CHO BẢNG TRÊN MOBILE KHI KHÔNG ĐỦ CHỖ */
+        .responsive-table-container { overflow-x: scroll; }
+        table { min-width: 800px; }
+    }
+</style>
+
+<div class="content-wrapper">
+    <div class="sidebar">
+        <h5><i class="fas fa-cubes"></i> Nhóm sản phẩm</h5>
+        <ul class="sidebar-list">
+            {% for group in product_groups %}
+                <li><a href="#group-{{ group.id }}" class="sidebar-link">{{ group.name }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                <a href="{% url 'create_product' %}" class="btn btn-action flex-fill text-center">TẠO SP MỚI</a>
+                <a href="{% url 'create_product_item' %}" class="btn btn-action flex-fill text-center">TẠO MẶT HÀNG</a>
+                <a href="{% url 'product_item_list' %}" class="btn btn-action flex-fill text-center">DANH MỤC MẶT HÀNG</a>
+                <a href="{% url 'product_group_list' %}" class="btn btn-action flex-fill text-center">DANH MỤC NHÓM SP</a>
+                <a href="{% url 'create_product_group' %}" class="btn btn-action flex-fill text-center">TẠO NHÓM SP MỚI</a>
+            </div>
+
+            {% if grouped_sums %}
+            <div class="card-summary">
+                <h2>📊 TỔNG HỢP CÁC NHÓM SẢN PHẨM</h2>
+                <div class="responsive-table-container">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%; text-align:left;">Tên nhóm</th>
+                                <th style="width: 25%;">Thực hiện (1.000đ)</th>
+                                <th style="width: 25%;">Kế hoạch (1.000đ)</th>
+                                <th style="width: 25%;">Tổng giá trị (1.000đ)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for key, data in grouped_sums.items %}
+                            <tr>
+                                <td><strong>{{ key }}</strong></td>
+                                <td>{{ data.done|floatformat:0|int_dot_format }}</td>
+                                <td>{{ data.planned|floatformat:0|int_dot_format }}</td>
+                                <td>{{ data.total|floatformat:0|int_dot_format }}</td>
+                            </tr>
+                            {% endfor %}
+                            <tr class="total-row">
+                                <td style="text-align:left;">TỔNG TẤT CẢ CÁC NHÓM</td>
+                                <td>{{ total_done_all|floatformat:0|int_dot_format }}</td>
+                                <td>{{ total_planned_all|floatformat:0|int_dot_format }}</td>
+                                <td>{{ total_value_all|floatformat:0|int_dot_format }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <h2 class="text-center">⭐ TIẾN ĐỘ SẢN PHẨM CỤ THỂ</h2>
+
+            {% for group in product_groups %}
+            <div id="group-{{ group.id }}">
+                <h3>{{ group.name }}</h3>
+                <div class="summary-box d-flex flex-wrap gap-3 justify-content-between">
+                    <div class="summary-item"><strong>Số lượng SP:</strong> {{ group.product_count }} sản phẩm</div>
+                    <div class="summary-item"><strong>Đã thực hiện:</strong> {{ group.total_value_done|floatformat:0|int_dot_format }} (1.000đ)</div>
+                    <div class="summary-item"><strong>Theo kế hoạch:</strong> {{ group.total_planned_value|floatformat:0|int_dot_format }} (1.000đ)</div>
+                    <div class="summary-item"><strong>Tổng giá trị:</strong> {{ group.total_value_group|floatformat:0|int_dot_format }} (1.000đ)</div>
+                </div>
+
+                <div class="responsive-table-container">
+                    <table class="table table-bordered table-hover table-detail">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Sản phẩm</th>
+                                <th>Đơn giá</th>
+                                <th>Đã thực hiện</th>
+                                <th>Kế hoạch tháng</th>
+                                <th>Tiến độ (%)</th>
+                                <th>Kế hoạch (%)</th>
+                                <th>Vào xưởng</th>
+                                <th>Ra xưởng</th>
+                                <th>Chi tiết</th>
+                                <th>Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in group.products_in_group %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td style="text-align:left;">{{ product.name }}</td>
+                                <td>{{ product.item.unit_price|floatformat:0|int_dot_format }}</td>
+                                <td>{{ product.total_value|floatformat:0|int_dot_format }}</td>
+                                <td>{{ product.planned_value|floatformat:0|int_dot_format }}</td>
+                                <td><span class="badge bg-primary">{{ product.total_progress }}%</span></td>
+                                <td><span class="badge bg-secondary">{{ product.planned_progress }}%</span></td>
+                                <td>{{ product.start_date|date:"d/m/Y" }}</td>
+                                <td>{{ product.end_date|date:"d/m/Y" }}</td>
+                                <td><a href="{% url 'update_progress' product.id %}" class="btn btn-action btn-sm">Xem</a></td>
+                                <td>
+                                    {% with product.notes.all|dictsortreversed:"created_at"|first as note %}
+                                        {% if note %}
+                                            <span class="note-text" title="{{ note.content }}">{{ note.content }}</span>
+                                        {% else %}
+                                            <span class="note-text text-muted">Không có ghi chú</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="11" class="text-center text-muted py-4">Không có sản phẩm nào trong nhóm này.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+        </div> </div>
+</div>
+
+<script>
+    // Smooth scroll và Highlight Active Link giữ nguyên logic
+    const sections = document.querySelectorAll('[id^="group-"]');
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    const offset = 100;
+
+    // Smooth scroll
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            const baseHeaderHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--base-header-height'));
+            const topOffset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--top-offset'));
+            const scrollAdjustment = baseHeaderHeight + topOffset + 10;
+
+            if (target) {
+                window.scrollTo({
+                    top: target.offsetTop - scrollAdjustment,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Highlight active section while scrolling
+    function highlightActiveLink() {
+        let currentActive = null;
+        const baseHeaderHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--base-header-height'));
+        const topOffset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--top-offset'));
+
+        let scrollPos = window.scrollY + baseHeaderHeight + topOffset + 20;
+
+        sections.forEach(section => {
+            if (scrollPos >= section.offsetTop) {
+                currentActive = section.id;
+            }
+        });
+
+        sidebarLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href').substring(1) === currentActive) {
+                link.classList.add('active');
+            }
+        });
+    }
+
+    window.addEventListener('scroll', highlightActiveLink);
+    document.addEventListener('DOMContentLoaded', highlightActiveLink);
+</script>
+{% endblock %}

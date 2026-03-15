@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    {% for group, products in group_products.items %}
+        <div class="group-block mb-3">
+            <h2 style="cursor: pointer; color: #0d6efd;" data-toggle="collapse" data-target="#group-{{ group.id }}">
+                {{ group.name }}
+            </h2>
+            <div id="group-{{ group.id }}" class="collapse">
+                {% if products %}
+                    <div class="row mt-3">
+                        {% for product in products %}
+                            <div class="col-md-4">
+                                <div class="card mb-4 shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ product.name }}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>Không có sản phẩm nào trong nhóm này.</p>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const headers = document.querySelectorAll('[data-toggle="collapse"]');
+        headers.forEach(header => {
+            header.addEventListener('click', function () {
+                const targetId = this.getAttribute('data-target');
+                const target = document.querySelector(targetId);
+                if (target) {
+                    target.classList.toggle('show');
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+/* Collapse mặc định ẩn */
+.collapse {
+    display: none;
+}
+
+/* Khi có class 'show' thì hiện ra */
+.collapse.show {
+    display: block;
+}
+</style>
+{% endblock %}

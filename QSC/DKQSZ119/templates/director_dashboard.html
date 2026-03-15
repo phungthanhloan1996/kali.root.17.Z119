@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tổng hợp quân số - Giám đốc{% endblock %}
+{% block content %}
+<div class="container mt-5 p-4 bg-white rounded shadow">
+    <h2 class="text-center text-primary mb-4">📊 Báo cáo quân số ngày {{ today }}</h2>
+
+    <div class="row text-center mb-4">
+        <div class="col-md-4">
+            <div class="alert alert-secondary shadow-sm">
+                <h5 class="mb-1">Tổng quân số</h5>
+                <h3 class="fw-bold">{{ total_workers }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="alert alert-success shadow-sm">
+                <h5 class="mb-1">Có mặt</h5>
+                <h3 class="fw-bold">{{ present_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="alert alert-danger shadow-sm">
+                <h5 class="mb-1">Vắng mặt</h5>
+                <h3 class="fw-bold">{{ absent_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="alert alert-danger shadow-sm">
+                <h5 class="mb-1">Phép</h5>
+                <h3 class="fw-bold">{{ leave_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="alert alert-danger shadow-sm">
+                <h5 class="mb-1">Đi học</h5>
+                <h3 class="fw-bold">{{ study_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="alert alert-danger shadow-sm">
+                <h5 class="mb-1">Nghỉ ốm, thai sản</h5>
+                <h3 class="fw-bold">{{ pregnancy_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="alert alert-danger shadow-sm">
+                <h5 class="mb-1">Công tác</h5>
+                <h3 class="fw-bold">{{ curve_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="alert alert-danger shadow-sm">
+                <h5 class="mb-1">Nghỉ hưu</h5>
+                <h3 class="fw-bold">{{ nghichohuu_count }}</h3>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="alert alert-danger shadow-sm">
+                <h5 class="mb-1">Nghỉ đột xuất</h5>
+                <h3 class="fw-bold">{{ traiphep_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="alert alert-danger shadow-sm">
+                <h5 class="mb-1">Đi kinh tế</h5>
+                <h3 class="fw-bold">{{ kinhte_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="alert alert-danger shadow-sm">
+                <h5 class="mb-1">Trốn trại</h5>
+                <h3 class="fw-bold"></h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="alert alert-danger shadow-sm">
+                <h5 class="mb-1">Chưa rõ lý do</h5>
+                <h3 class="fw-bold"></h3>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="text-danger mt-4 mb-3">📍 Danh sách vắng mặt</h4>
+    {% if absent_records %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle text-center">
+            <thead class="table-danger">
+                <tr>
+                    <th>STT</th>
+                    <th>Họ tên</th>
+                    <th>Đơn vị</th>
+                    <th>Trạng thái</th>
+                    <th>Lý do</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in absent_records %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ record.worker.name }}</td>
+                    <td>{{ record.worker.z119group.name }}</td>
+                    <td>
+                        {% if record.status == 'absent' %} Nghỉ đột xuất
+                        {% elif record.status == 'leave' %} Nghỉ phép
+                        {% elif record.status == 'curve' %} Công tác
+                        {% elif record.status == 'pregnancy' %} ốm đau, Thai sản
+                        {% elif record.status == 'gostation' %} Đi gác
+                        {% elif record.status == 'study' %} Học tập
+	                    {% elif record.status == 'nghichohuu' %} Hưu, chờ hưu
+                        {% elif record.status == 'kinhte' %} Đi kinh tế
+                        {% else %} --
+                        {% endif %}
+                    </td>
+                    <td>{{ record.note|default:"" }}</td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="text-muted fst-italic">Không có ai vắng mặt hôm nay.</p>
+    {% endif %}
+<h3>Đơn vị chưa báo cáo quân số hôm nay</h3>
+<ul>
+	{% for group in not_reported_groups %}
+		<li> {{ group.name }}</li>
+	{% empty %}
+		<li> Tất cả đơn vị đã báo cáo quân số hôm nay </li>
+	{% endfor %}
+</ul>
+</div>
+<script>
+    setInterval(function(){
+        location.reload();
+    },5000);
+</script>
+{% endblock %}

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết phiếu đặt hàng (Thực hiện) #{{ order_form.id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f9fafb;
+            color: #333;
+        }
+        h2, h3 {
+            color: #333;
+            text-align: center;
+        }
+        p strong {
+            color: #444;
+        }
+        .info-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: white;
+            font-size: 1em;
+        }
+        .submitted { background: #ffc107; }       /* vàng - đang chờ */
+        .forwarded { background: #17a2b8; }       /* xanh dương - đã chuyển */
+        .completed { background: #28a745; }       /* xanh lá - hoàn thành */
+        .rejected  { background: #dc3545; }       /* đỏ - từ chối */
+        .timeline {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 800px;
+            border-radius: 6px;
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+        .timeline strong {
+            color: #0062cc;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 10px 14px;
+            text-align: left;
+        }
+        th {
+            background-color: #28a745;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f6fc;
+        }
+        tr:hover {
+            background-color: #e9f2ff;
+        }
+        .status-completed {
+            color: green;
+            font-weight: bold;
+        }
+        .status-pending {
+            color: orange;
+            font-weight: bold;
+        }
+        .action-btn {
+            background: #28a745;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .action-btn:hover {
+            background: #218838;
+        }
+        .export-btn {
+            background: #673AB7;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .export-btn:hover {
+            background: #5a3d9c;
+        }
+        .back-button {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            background: #007bff;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+        }
+        .back-button:hover {
+            background: #0056b3;
+        }
+        .button-group {
+            margin-top: 25px;
+            text-align: center;
+        }
+        .no-data {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Chi tiết phiếu đặt hàng (Thực hiện) #{{ order_form.id }}</h2>
+
+<div class="info-box">
+    <p><strong>Đơn vị đặt:</strong> {{ order_form.ordering_unit.name|default:"N/A" }}</p>
+    <p><strong>Đơn vị định mức:</strong> {{ order_form.norm_unit.name|default:"N/A" }}</p>
+    <p><strong>Đơn vị thực hiện:</strong> {{ order_form.executing_unit.name|default:"N/A" }}</p>
+    <p><strong>Ngày đặt:</strong> {{ order_form.order_date|default:"N/A"|date:"d/m/Y" }}</p>
+    <p><strong>Trạng thái phiếu:</strong>
+        <span class="status-badge
+            {% if order_form.status == 'submitted' %}submitted
+            {% elif order_form.status == 'forwarded' %}forwarded
+            {% elif order_form.status == 'completed' %}completed
+            {% else %}rejected{% endif %}">
+            {{ order_form.get_status_display }}
+        </span>
+    </p>
+</div>
+
+<!-- Tiến trình thời gian thực hiện -->
+<div class="timeline">
+    <strong>Tiến trình thời gian:</strong><br>
+    • Gửi phiếu từ đơn vị đặt: {{ order_form.created_at|date:"d/m/Y H:i" }}<br>
+    {% if order_form.reviewed_at %}
+        • Phòng Kế hoạch duyệt/chuyển: {{ order_form.reviewed_at|date:"d/m/Y H:i" }}<br>
+    {% else %}
+        • Phòng Kế hoạch duyệt/chuyển: <span style="color:#888">Chưa duyệt</span><br>
+    {% endif %}
+    • Nhận phiếu & bắt đầu thực hiện: <span style="color:#888">Xem ngày đầu tiên có tiến độ hoặc ngày hoàn thành item</span><br>
+    {% if items %}
+        {% if items.0.is_completed %}
+            • Hoàn thành (ít nhất một phần): <span style="color:#28a745">Có mặt hàng đã xong</span><br>
+        {% else %}
+            • Hoàn thành toàn bộ phiếu: <span style="color:#888">Chưa hoàn thành</span>
+        {% endif %}
+    {% else %}
+        • Hoàn thành toàn bộ phiếu: <span style="color:#888">Không có mặt hàng</span>
+    {% endif %}
+</div>
+
+<h3>Danh sách hàng đặt</h3>
+
+{% if items %}
+    <table>
+        <tr>
+            <th>STT</th>
+            <th>Tên hàng</th>
+            <th>Số lượng</th>
+            <th>Số việc</th>
+            <th>Ngày phải xong</th>
+            <th>Ngày hoàn thành</th>
+            <th>Ghi chú</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+        </tr>
+        {% for item in items %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.item_name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{% if item.product %}{{ item.product.name }}{% else %}-{% endif %}</td>
+            <td>{{ item.due_date|default:"-"|date:"d/m/Y" }}</td>
+            <td>{% if item.completed_date %}{{ item.completed_date|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+            <td>{{ item.note|default:"" }}</td>
+            <td>
+                {% if item.is_completed %}
+                    <span class="status-completed">✅ Hoàn thành</span>
+                {% else %}
+                    <span class="status-pending">⏳ Chưa hoàn thành</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if not item.is_completed %}
+                    <form method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="submit_type" value="mark_complete">
+                        <input type="hidden" name="item_id" value="{{ item.id }}">
+                        <button type="submit" class="action-btn">Xác nhận hoàn thành</button>
+                    </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p class="no-data">Phiếu này chưa có mặt hàng nào cần thực hiện.</p>
+{% endif %}
+
+<div class="button-group">
+    <form method="post" style="display:inline;">
+        {% csrf_token %}
+        <input type="hidden" name="submit_type" value="export_word">
+        <button type="submit" class="export-btn">📄 Xuất ra Word</button>
+    </form>
+    <a href="{% url 'order_execution_list' %}" class="back-button">🔙 Quay lại danh sách phiếu</a>
+</div>
+
+</body>
+</html>

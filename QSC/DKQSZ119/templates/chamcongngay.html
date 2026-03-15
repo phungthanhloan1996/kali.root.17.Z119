@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="5">
+  <title>Báo cáo quân số</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      table-layout: fixed;
+    }
+    th, td {
+      border: 1px solid #000;
+      padding: 4px;
+      text-align: center;
+      word-wrap: break-word;
+    }
+    .header {
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .sub-header {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  Báo cáo quân số {{ today_full }}
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th rowspan="2">Đơn vị</th>
+      <th rowspan="2">T.gian báo quân số</th>
+      <th rowspan="2">Tổng quân số</th>
+      <th rowspan="2">Q.số vắng mặt</th>
+      <th rowspan="2">Q.số làm việc</th>
+      <th colspan="9">LÝ DO VẮNG MẶT</th>
+      <th rowspan="2">Người báo cáo</th>
+      <th rowspan="2">Ghi chú</th>
+    </tr>
+    <tr class="sub-header">
+      <th>Họp, Học</th>
+      <th>Phép</th>
+      <th>Công tác</th>
+      <th>Ốm đau, thai sản</th>
+      <th>Nghỉ bù</th>
+      <th>Chờ việc</th>
+      <th>Chờ hưu</th>
+      <th>Nghỉ đột xuất</th>
+      <th>Làm kinh tế</th>    
+    </tr>
+  </thead>
+  <tbody>
+    {% for report in report_data %}
+    <tr>
+      <td>{{ report.group }}</td>
+      <td>
+        {% if report.report_time %}
+          {{ report.report_time|date:"H:i" }}
+	{% else %}
+	Chưa có báo cáo
+	{% endif %}
+      </td>
+      <td>{{ report.workers|length }}</td>
+      <td>{{ report.absent_count }}</td>
+      <td>{{ report.working_count }}</td>
+      <td>{% for worker in report.leave_types.study %}<p>{{ worker }}</p>{% endfor %}</td>
+      <td>{% for worker in report.leave_types.leave %}<p>{{ worker }}</p>{% endfor %}</td>
+      <td>{% for worker in report.leave_types.curve %}<p>{{ worker }}</p>{% endfor %}</td>
+      <td>{% for worker in report.leave_types.pregnancy %}<p>{{ worker }}</p>{% endfor %}</td>
+      <td>{% for worker in report.leave_types.bu %}<p>{{ worker }}</p>{% endfor %}</td>
+      <td>{% for worker in report.leave_types.cho %}<p>{{ worker }}</p>{% endfor %}</td>
+      <td>{% for worker in report.leave_types.nghichohuu %}<p>{{ worker }}</p>{% endfor %}</td>
+      <td>{% for worker in report.leave_types.absent %}<p>{{ worker }}</p>{% endfor %}</td>
+      <td>{% for worker in report.leave_types.kinhte %}<p>{{ worker }}</p>{% endfor %}</td>
+      <td>{{ report.reporter }}</td>
+      <td>{{ report.note }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Phiếu giao cho đơn vị</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background-color: #f9f9f9;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th {
+            background-color: #1976D2;
+            color: white;
+            padding: 10px;
+        }
+
+        td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e3f2fd;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-top: 20px;
+            background-color: #FF9800;
+            color: white;
+            padding: 10px 16px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #e68900;
+        }
+
+        .no-orders {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        ul li {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>📋 Danh sách phiếu được giao</h2>
+
+    <table>
+    <thead>
+        <tr>
+            <th>STT</th>
+            <th>Ngày đặt</th>
+            <th>Đơn vị đặt</th>
+            <th>Đơn vị định mức</th>
+            <th>Trạng thái</th>
+            <th>Số việc</th>
+            <th>Chi tiết</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ order.order_date }}</td>
+            <td>{{ order.ordering_unit.name }}</td>
+            <td>{{ order.norm_unit.name }}</td>
+
+            <!-- Cột trạng thái: hiển thị tiến độ công việc -->
+            <td>
+                {% if order.total_items %}
+                    {% if order.completed_items == order.total_items %}
+                        ✅ Hoàn thành ({{ order.completed_items }}/{{ order.total_items }})
+                    {% else %}
+                        ⏳ Đang thực hiện ({{ order.completed_items }}/{{ order.total_items }})
+                    {% endif %}
+                {% else %}
+                    ---
+                {% endif %}
+            </td>
+
+            <!-- Cột số việc -->
+            <td>
+                <ul>
+                    {% for item in order.items.all %}
+                        <li>
+                            {% if item.product %}
+                                {{ item.product.name }}
+                            {% else %}
+                                {{ item.item_name }}
+                            {% endif %}
+                            {% if item.is_completed %}
+                                ✅
+                            {% endif %}
+                        </li>
+                    {% empty %}
+                        <li>---</li>
+                    {% endfor %}
+                </ul>
+            </td>
+
+            <td><a href="{% url 'order_execution_detail' order.id %}">🔍 Xem</a></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7" class="no-orders">Không có phiếu nào được giao.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+    <div style="text-align: center;">
+        <a href="{% url 'PXdathang' %}" class="back-button">🔙 Quay lại trang đặt hàng</a>
+    </div>
+
+</body>
+</html>

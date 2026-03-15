@@ -1,0 +1,43 @@
+<!-- templates/order_norm_list.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Danh sách phiếu cho đơn vị định mức{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Danh sách phiếu cho đơn vị định mức</h2>
+  {% if orders %}
+  <table class="table table-bordered table-hover mt-3">
+    <thead class="thead-light">
+      <tr>
+        <th>Mã phiếu</th>
+        <th>Ngày đặt</th>
+        <th>Đơn vị đặt hàng</th>
+        <th>Đơn vị thực hiện</th>
+        <th>Trạng thái</th>
+        <th>Chi tiết</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td>{{ order.id }}</td>
+        <td>{{ order.order_date|date:"d/m/Y" }}</td>
+        <td>{{ order.ordering_unit.name }}</td>
+        <td>{{ order.executing_unit.name }}</td>
+        <td>
+          {% if order.status == 'submitted' %}Đã gửi{% elif order.status == 'approved' %}Đã duyệt
+          {% elif order.status == 'rejected' %}Từ chối{% elif order.status == 'forwarded' %}Đã gửi đến đơn vị thực hiện
+          {% else %}{{ order.status }}{% endif %}
+        </td>
+        <td><a href="{% url 'order_norm_detail' order.id %}" class="btn btn-sm btn-primary">Xem</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>Chưa có phiếu nào được gửi đến đơn vị định mức của bạn.</p>
+  {% endif %}
+</div>
+{% endblock %}

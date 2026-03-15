@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Tạo mặt hàng sản phẩm mới</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Tạo mặt hàng sản phẩm</button>
+</form>
+{% endblock %}

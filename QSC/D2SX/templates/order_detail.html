@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết phiếu đặt hàng</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        h2 {
+            text-align: center;
+            color: #4A148C;
+            margin-bottom: 20px;
+        }
+
+        .info {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .info p {
+            margin: 8px 0;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 12px 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #6A1B9A;
+            color: white;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        tr:hover {
+            background: #f1f1f1;
+        }
+
+        .status-badge {
+            font-weight: bold;
+            display: block;
+        }
+
+        .time-label {
+            display: block;
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .pending {
+            color: #e67e22;
+            font-style: italic;
+        }
+
+        .success {
+            color: #2e7d32;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        a.button-link {
+            display: inline-block;
+            background-color: #9C27B0;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: 0.3s;
+        }
+
+        a.button-link:hover {
+            background-color: #7B1FA2;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <h2>Chi tiết Phiếu Đặt Hàng #{{ order.id }}</h2>
+
+
+
+    <div class="info">
+        <p><strong>1. Thời điểm A,B gửi phiếu:</strong> {{ order.order_date|date:"d/m/Y" }} <small>({{ order.created_at|date:"H:i" }})</small></p>
+
+        <p><strong>2. Thời điểm B1 chuyển phiếu:</strong>
+            {% if order.reviewed_at %}
+                <span class="success">✅ {{ order.reviewed_at|date:"H:i - d/m/Y" }}</span>
+            {% else %}
+                <span class="pending">⏳ Đang chờ Phòng Kế hoạch tiếp nhận & phê duyệt</span>
+            {% endif %}
+        </p>
+
+        <p><strong>Đơn vị đặt:</strong> {{ order.ordering_unit.name }}</p>
+        <p><strong>Đơn vị thực hiện:</strong> {{ order.executing_unit.name }}</p>
+        <p><strong>Đơn vị định mức:</strong> {{ order.norm_unit.name|default:"---" }}</p>
+        <p><strong>Trạng thái tổng quát:</strong> <b>{{ order.get_status_display }}</b></p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên hàng</th>
+                <th>Số lượng</th>
+                <th>Số việc</th>
+                <th>Ngày phải xong</th>
+                <th>Ghi chú</th>
+                <th>Trạng thái & Thời gian</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.item_name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>
+                    {% if item.product %}
+                        {{ item.product.name }}
+                    {% else %}
+                        ---
+                    {% endif %}
+                </td>
+                <td>{{ item.due_date|date:"d/m/Y" }}</td>
+                <td>{{ item.note|default:"" }}</td>
+                <td>
+                    {% if item.is_completed %}
+                        <span class="status-badge success">✅ Hoàn thành</span>
+                        <span class="time-label">Xong: {{ item.completed_date|date:"d/m/Y" }}</span>
+                    {% else %}
+                        <span class="status-badge pending">⏳ Đang xử lý</span>
+                        <span class="time-label">(Tại đơn vị thực hiện)</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="button-container">
+        <a href="{% url 'order_list' %}" class="button-link">⬅ Quay lại danh sách</a>
+    </div>
+</body>
+</html>

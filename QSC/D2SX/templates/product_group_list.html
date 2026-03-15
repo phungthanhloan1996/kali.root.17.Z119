@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Danh sách nhóm sản phẩm</h2>
+<ul>
+  {% for group in product_groups %}
+    <li>{{ group.name }}</li>
+  {% endfor %}
+</ul>
+{% endblock %}

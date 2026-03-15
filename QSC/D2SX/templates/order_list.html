@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách phiếu đặt hàng</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        h2 { text-align: center; margin-bottom: 20px; color: #4A148C; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        th, td { padding: 10px; text-align: center; border-bottom: 1px solid #ddd; vertical-align: top; }
+        th { background: #6A1B9A; color: white; font-weight: bold; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        tr:hover { background: #f1f1f1; }
+        ul { list-style: none; padding-left: 0; margin: 0; }
+        ul li { padding: 2px 0; }
+        a.detail-link { background-color: #0288D1; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 14px; }
+        a.detail-link:hover { background-color: #01579B; }
+        .button-container { text-align: center; margin-top: 20px; }
+        a.button-link { display: inline-block; background-color: #9C27B0; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.3s; }
+        a.button-link:hover { background-color: #7B1FA2; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+<h2>Danh sách phiếu đặt hàng</h2>
+
+{% if orders %}
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Ngày đặt</th>
+                <th>Đơn vị thực hiện</th>
+                <th>Đơn vị định mức</th>
+                <th>Trạng thái phiếu</th>
+                <th>Tiến độ</th>
+                <th>Tên hàng</th>
+                <th>Số việc</th>
+                <th>Chi tiết</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for order in orders %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ order.order_date }}</td>
+                <td>{{ order.executing_unit.name }}</td>
+                <td>
+                    {% if order.norm_unit %}
+                        {{ order.norm_unit.name }}
+                    {% else %}
+                        ---
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if order.total_items and order.completed_items == order.total_items %}
+                        ✅ Hoàn thành
+                    {% else %}
+                        ⏳ Chưa hoàn thành
+                    {% endif %}
+                </td>
+                <td>
+                    {% if order.total_items %}
+                        {{ order.completed_items }}/{{ order.total_items }}
+                    {% else %}
+                        ---
+                    {% endif %}
+                </td>
+                <td>
+                    <ul>
+                    {% for item in order.items.all %}
+                        <li>{{ item.item_name }}</li>
+                    {% empty %}
+                        <li>---</li>
+                    {% endfor %}
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                    {% for item in order.items.all %}
+                        {% if item.product %}
+                            <li>{{ item.product.name }}</li>
+                        {% else %}
+                            <li>---</li>
+                        {% endif %}
+                    {% empty %}
+                        <li>---</li>
+                    {% endfor %}
+                    </ul>
+                </td>
+                <td><a href="{% url 'order_detail' order.id %}" class="detail-link">Xem</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p style="text-align:center;">Chưa có phiếu đặt hàng nào.</p>
+{% endif %}
+
+<div class="button-container">
+    <a href="{% url 'PXdathang' %}" class="button-link">⬅ Quay lại</a>
+</div>
+</body>
+</html>

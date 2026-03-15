@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách Phiếu Đặt Hàng Chờ Duyệt</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        a.button, button.action-btn {
+            padding: 6px 12px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            margin-right: 4px;
+        }
+
+        a.button:hover, button.action-btn:hover {
+            background-color: #0056b3;
+        }
+
+        form.inline-form {
+            display: inline-block;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <h2>📋 Danh sách Phiếu Đặt Hàng Chờ Duyệt</h2>
+
+    {% if messages %}
+        <ul style="color: green;">
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if orders %}
+        <table>
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Ngày đặt</th>
+                    <th>Đơn vị đặt</th>
+                    <th>Đơn vị thực hiện</th>
+                    <th>Đơn vị định mức</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ order.order_date }}</td>
+                    <td>{{ order.ordering_unit.name }}</td>
+                    <td>{{ order.executing_unit.name }}</td>
+                    <td>{{ order.norm_unit.name }}</td>
+                    <td>{{ order.get_status_display }}</td>
+                    <td>
+                        <a href="{% url 'order_review_detail' order.id %}" class="button">Chi tiết</a>
+                        <form method="post" action="{% url 'order_review_detail' order.id %}" class="inline-form" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="approve" />
+                            <button type="submit" class="action-btn" style="background-color: #28a745;">Duyệt</button>
+                        </form>
+                        <form method="post" action="{% url 'order_review_detail' order.id %}" class="inline-form" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="reject" />
+                            <button type="submit" class="action-btn" style="background-color: #dc3545;">Từ chối</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Không có phiếu nào đang chờ duyệt.</p>
+    {% endif %}
+<a href="{% url 'home_redirect' %}" style="background-color: #9C27B0; color: white; padding: 8px 12px; text-decoration: none; border-radius: 4px;"> Duyệt xong, quay về trang chủ</a>
+</body>
+</html>

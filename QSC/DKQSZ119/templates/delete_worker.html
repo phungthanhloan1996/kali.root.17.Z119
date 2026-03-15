@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Xoá công nhân{% endblock %}
+
+{% block content %}
+    <div class="container mt-5 p-4 bg-white rounded shadow">
+        <h2 class="text-center text-danger">Danh sách công nhân</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Họ tên</th>
+                    <th>Cấp bậc</th>
+                    <th>Chức vụ</th>
+                    <th>Số điện thoại</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for worker in workers %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ worker.name }}</td>
+                        <td>{{ worker.rank }}</td>
+                        <td>{{ worker.position }}</td>
+                        <td>{{ worker.phone_number }}</td>
+                        <td>
+                            <form method="post" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="worker_id" value="{{ worker.id }}">
+                                <button type="submit" class="btn btn-danger">Xoá</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Quay lại</a>
+    </div>
+{% endblock %}

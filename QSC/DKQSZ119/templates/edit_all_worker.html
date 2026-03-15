@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chỉnh sửa công nhân{% endblock %}
+
+{% block content %}
+<div class="container mt-5 p-4 bg-white rounded shadow">
+    <h2 class="mb-4 text-center text-primary">🛠️ Chỉnh sửa thông tin công nhân</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success text-center">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle text-center">
+                <thead class="table-primary">
+                    <tr>
+                        <th>STT</th>
+                        <th>Họ tên</th>
+                        <th>Cấp bậc</th>
+                        <th>Chức vụ</th>
+                        <th>Số điện thoại</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for worker in workers %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><input type="text" name="name_{{ worker.id }}" value="{{ worker.name }}" class="form-control" required></td>
+                        <td><input type="text" name="rank_{{ worker.id }}" value="{{ worker.rank }}" class="form-control"></td>
+                        <td><input type="text" name="position_{{ worker.id }}" value="{{ worker.position }}" class="form-control"></td>
+                        <td><input type="text" name="phone_number_{{ worker.id }}" value="{{ worker.phone_number }}" class="form-control"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">⬅️ Quay lại</a>
+            <button type="submit" class="btn btn-success">💾 Lưu thay đổi</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

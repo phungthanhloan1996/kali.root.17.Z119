@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+{% block title %}Trang chủ | Đăng ký quân số Z119{% endblock %}
+{% block content %}
+{% load tz %}
+<div class="login-container text-center mb-4">
+    <h2><span class="highlight">HỆ THỐNG ĐĂNG KÝ QUÂN SỐ Z119</span></h2>
+</div>
+
+<a class="nav-link" href="{% url 'logout' %}" style="color: white; z-index: 10;">🔒 Đăng xuất</a>
+<table class="table table-light w-10">
+<tr>
+	<th>Tổng quân số: </th>
+	<td>{{ total_worker }}</td>
+</tr>
+<tr>
+	<th>Quân số đi làm: </th>
+	<td>{{ present_count }}</td>
+</tr>
+<tr>
+	<th>Quân số vắng: </th>
+	<td>{{ absent_statuses }}</td>
+</tr>
+<div class="table-container mt-4">
+    <h2><strong>{{ leader_group }}</strong> - BÁO QUÂN SỐ - {{ today }}</h2>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert
+                {% if message.tags == 'success' %}alert-success
+                {% elif message.tags == 'error' or message.tags == 'danger' %}alert-danger
+                {% else %}alert-info{% endif %}
+                mt-3 p-3 rounded shadow-sm">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    <form method="POST">
+        {% csrf_token %}
+        <table class="table table-bordered table-hover">
+            <thead class="table-primary">
+                <tr>
+                    <th>📌 STT</th>
+                    <th>👤 Họ tên</th>
+                    <th>📋 Trạng thái làm việc</th>
+                    <th>📝 Ghi chú (nếu có)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for worker in workers %}
+                    {% with record=worker.attendance_today %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ worker.name }}</td>
+                        <td>
+                            <select name="status_{{ worker.id }}" class="form-control">
+                                <!-- <option value="">-- Chọn trạng thái --</option> -->
+                                <option value="present" {% if record and record.status == "present" %}selected{% endif %}>✅ Làm theo sản phẩm</option>
+                                <option value="presenttg" {% if record and record.status == "presenttg" %}selected{% endif %}>⏰ Làm theo thời gian</option>
+                                <option value="curve" {% if record and record.status == "curve" %}selected{% endif %}>🟡 Công tác</option>
+                                <option value="absent" {% if record and record.status == "absent" %}selected{% endif %}>❌ Nghỉ đột xuất</option>
+                                <option value="leave" {% if record and record.status == "leave" %}selected{% endif %}>🟢 Nghỉ phép</option>
+                                <option value="pregnancy" {% if record and record.status == "pregnancy" %}selected{% endif %}>🤰 ốm đau, Thai sản</option>
+                                <option value="gostation" {% if record and record.status == "gostation" %}selected{% endif %}>🚗 Gác</option>
+                                <option value="study" {% if record and record.status == "study" %}selected{% endif %}>📚 Học ngoài đơn vị</option>
+                                <option value="studynuangayinZ" {% if record and record.status == "studynuangayinZ" %}selected{% endif %}>📚 Học nửa ngày tại nhà máy</option>
+                                <option value="studyfullinZ" {% if record and record.status == "studyfullinZ" %}selected{% endif %}>📚 Học cả ngày tại nhà máy</option>
+                                <option value="nghichohuu" {% if record and record.status == "nghichohuu" %}selected{% endif %}>🛌 Nghỉ chờ hưu</option>
+                                <option value="kinhte" {% if record and record.status == "kinhte" %}selected{% endif %}>✅ Làm kinh tế</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" name="note_{{ worker.id }}" class="form-control"
+                                   value="{{ record.note }}" placeholder="Ví dụ: nghỉ đột xuất, đi họp...">
+                        </td>
+                    </tr>
+                    {% endwith %}
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-lg btn-success w-100 mt-3 shadow-sm">
+            🚀 Gửi chấm công
+        </button>
+    </form>
+</div>
+
+<div class="table-container mt-5">
+    <h4 class="text-primary">📊 Thống kê hôm nay:</h4>
+    <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            ✅ Làm theo sản phẩm
+            <span class="badge bg-success rounded-pill">{{ total_present }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            ⏰ Làm theo thời gian
+            <span class="badge bg-info text-dark rounded-pill">{{ total_presenttg }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            🟡 Công tác
+            <span class="badge bg-warning text-dark rounded-pill">{{ total_curve }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            ❌ Nghỉ đột xuất
+            <span class="badge bg-danger rounded-pill">{{ total_absent }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            🟢 Nghỉ phép
+            <span class="badge bg-success rounded-pill">{{ total_leave }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            🤰 Ốm đau, Thai sản
+            <span class="badge bg-secondary rounded-pill">{{ total_pregnancy }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            🚗 Gác
+            <span class="badge bg-dark rounded-pill">{{ total_gostation }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            📚 Học ngoài đơn vị
+            <span class="badge bg-primary rounded-pill">{{ total_study }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            📚 Học nửa ngày tại nhà máy
+            <span class="badge bg-primary rounded-pill">{{ total_studynuangayinZ }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            📚 Học cả ngày tại nhà máy
+            <span class="badge bg-primary rounded-pill">{{ total_studyfullinZ }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            🛌 Nghỉ chờ hưu
+            <span class="badge bg-dark rounded-pill">{{ total_nghichohuu }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            ✅ Làm kinh tế ngoài Nhà máy
+            <span class="badge bg-success rounded-pill">{{ total_kinhte }}</span>
+        </li>
+    </ul>
+
+    <div class="d-flex justify-content-center mt-4 flex-wrap gap-3">
+        <a href="{% url 'edit_all_worker' %}" class="btn btn-outline-primary shadow-sm px-4 py-2 rounded-pill">
+            ✏️ Sửa thông tin
+        </a>
+        <a href="{% url 'delete_worker' %}" class="btn btn-outline-danger shadow-sm px-4 py-2 rounded-pill">
+            🗑️ Xóa người
+        </a>
+        <a href="{% url 'add_worker' %}" class="btn btn-outline-success shadow-sm px-4 py-2 rounded-pill">
+            ➕ Thêm người (Alt + U)
+        </a>
+        <a href="{% url 'chamcong' %}" class="btn btn-primary shadow-sm px-4 py-2 rounded-pill">
+            📅 Chấm công tháng
+        </a>
+        <a href="{% url 'history' %}" class="btn btn-primary shadow-sm px-4 py-2 rounded-pill">
+            📖 Lịch sử chấm công
+        </a>
+        <a href="{% url 'change_password' %}" class="btn btn-primary shadow-sm px-4 py-2 rounded-pill">
+            🔐 Đổi mật khẩu
+        </a>
+        <a href="{% url 'chamcongngay' %}" class="btn btn-primary shadow-sm px-4 py-2 rounded-pill">
+           📝 Chấm công ngày
+        </a>
+        <a href="{% url 'director_dashboard' %}" class="btn btn-primary shadow-sm px-4 py-2 rounded-pill">
+           ➕ Cả Nhà máy
+        </a>
+    </div>
+</div>
+
+{% if absent_workers %}
+<div class="table-container mt-4">
+    <h4 class="text-danger">📌 Danh sách công nhân nghỉ hôm nay:</h4>
+    <ul>
+        {% for worker in absent_workers %}
+            <li class="absent">👤 {{ worker.name }} - 📝 Lý do: {{ worker.reason }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<style>
+body {
+    background-color: #f4f6f9;
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+    padding: 20px;
+    margin: 0;
+}
+
+h2, h4 {
+    color: #333;
+}
+
+.login-container h2 {
+    font-size: 28px;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 3px solid #007bff;
+    display: inline-block;
+    padding-bottom: 5px;
+}
+
+.highlight {
+    color: #007bff;
+    font-weight: bold;
+}
+
+.nav-link {
+    font-size: 14px;
+    color: #ffffff;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.table-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.table th, .table td {
+    text-align: center;
+    padding: 10px;
+    vertical-align: middle;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.table th {
+    background-color: #007bff;
+    color: white;
+}
+
+.table-hover tr:hover {
+    background-color: #f0f8ff;
+}
+
+.form-control {
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+button {
+    transition: background-color 0.3s, color 0.3s, transform 0.2s ease-in-out;
+}
+
+button:hover {
+    transform: scale(1.03);
+}
+
+.d-flex a {
+    margin: 5px;
+}
+
+ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+ul li {
+    font-size: 14px;
+}
+
+.absent {
+    color: #dc3545;
+    font-weight: bold;
+    background-color: #ffe6e6;
+    padding: 8px;
+    margin: 5px 0;
+    border-left: 5px solid #dc3545;
+    border-radius: 5px;
+}
+</style>
+{% endblock %}
+{% block js %}
+<script>
+document.addEventListener('keydown', function(event) {
+	if (event.altKey) {
+		const key = event.key.toLowerCase();
+		if (key === 'u') {
+			window.location.href = "{% url 'add_worker' %}";
+		} else if (key === 't') {
+			window.location.href = "{% url 'chamcong' %}";
+		}
+	}
+});
+</script>
+    {% endblock %}

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết phiếu đặt hàng #{{ order_form.id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f9fafb;
+        }
+        h2, h3 {
+            color: #333;
+        }
+        p strong {
+            color: #444;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 10px 14px;
+            text-align: left;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f6fc;
+        }
+        tr:hover {
+            background-color: #e9f2ff;
+        }
+    </style>
+</head>
+<body>
+    <h2>Chi tiết phiếu đặt hàng #{{ order_form.id }}</h2>
+
+    <p><strong>Đơn vị đặt:</strong> {{ order_form.ordering_unit.name }}</p>
+    <p><strong>Đơn vị định mức:</strong>
+        {% if order_form.norm_unit %}
+            {{ order_form.norm_unit.name }}
+        {% else %}
+            (Chưa có)
+        {% endif %}
+    </p>
+    <p><strong>Đơn vị thực hiện:</strong> {{ order_form.executing_unit.name }}</p>
+    <p><strong>Ngày đặt:</strong> {{ order_form.order_date }}</p>
+    <p><strong>Trạng thái:</strong> {{ order_form.get_status_display }}</p>
+
+    <h3>Danh sách hàng đặt</h3>
+    <table>
+        <tr>
+            <th>Số việc</th>
+            <th>Tên hàng</th>
+            <th>Số lượng</th>
+            <th>Hạn giao</th>
+            <th>Ghi chú</th>
+        </tr>
+        {% for item in items %}
+        <tr>
+            <td>{% if item.product %}{{ item.product.name }}{% else %}(Chưa gán số việc){% endif %}</td>
+            <td>{{ item.item_name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.due_date }}</td>
+            <td>{{ item.note }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

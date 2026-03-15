@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Duyệt Phiếu Đặt Hàng </title>
+</head>
+<body>
+    <h2>Duyệt Phiếu Đặt Hàng </h2>
+
+    <p><strong>Ngày đặt:</strong> {{ order.order_date }}</p>
+    <p><strong>Đơn vị thực hiện:</strong> {{ order.executing_unit.name }}</p>
+    <p><strong>Đơn vị đặt:</strong> {{ order.ordering_unit.name }}</p>
+    <p><strong>Don vi dinh muc:</strong>{% if order.norm_unit %}
+    {{ order.norm_unit.name }}
+  {% else %}
+    ---
+  {% endif %}</p>
+    <p><strong>Trạng thái:</strong> {{ order.get_status_display }}</p>
+
+    <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên hàng</th>
+                <th>Số lượng</th>
+                <th>Số việc</th>
+                <th>Ngày xong</th>
+                <th>Ghi chú</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ item.item_name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>
+                  {% if item.product %}
+                    {{ item.product.name }}
+                  {% else %}
+                    <!-- Có thể để trống hoặc ghi "N/A" -->
+                  {% endif %}
+                </td>
+
+                <td>{{ item.due_date }}</td>
+                <td>{{ item.note }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <form method="post" style="margin-top: 20px;">
+        {% csrf_token %}
+        {% if user.is_director %}
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" name="action" value="approve" class="action-btn" style="background-color: #28a745;">Duyệt</button>
+            <button type="submit" name="action" value="reject" class="action-btn" style="background-color: #dc3545;">Từ chối</button>
+        </form>
+        {% else %}
+<p>Bạn không có quyền duyệt phiếu.</p>
+{% endif %}
+    </form>
+
+    <p><a href="{% url 'order_list' %}">⬅ Quay lại danh sách</a></p>
+</body>
+</html>

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Chi tiết phiếu cho đơn vị định mức{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Chi tiết phiếu đặt hàng</h2>
+
+    <div class="mb-3">
+        <p><strong>Ngày đặt:</strong> {{ order.order_date|date:"d/m/Y" }}</p>
+        <p><strong>Đơn vị đặt hàng:</strong> {{ order.ordering_unit.name }}</p>
+        <p><strong>Đơn vị định mức:</strong> {{ order.norm_unit.name }}</p>
+        <p><strong>Đơn vị thực hiện:</strong> {{ order.executing_unit.name }}</p>
+        <p><strong>Trạng thái:</strong>
+            {% if order.status == 'submitted' %}Đã gửi
+            {% elif order.status == 'approved' %}Đã duyệt
+            {% elif order.status == 'rejected' %}Từ chối
+            {% elif order.status == 'forwarded' %}Đã gửi đến đơn vị thực hiện
+            {% else %}{{ order.status }}{% endif %}
+        </p>
+    </div>
+
+    <h4>Danh sách mặt hàng</h4>
+    {% if items %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Số việc</th>
+                <th>Tên hàng</th>
+                <th>Số lượng</th>
+                <th>Ngày hoàn thành dự kiến</th>
+                <th>Ghi chú</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{% if item.product %}{{ item.product.name }}{% else %}(Chưa gán số việc){% endif %}</td>
+                <td>{{ item.item_name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.due_date|date:"d/m/Y" }}</td>
+                <td>{{ item.note }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Không có mặt hàng nào trong phiếu này.</p>
+    {% endif %}
+
+    <!-- Nút xuất Excel (dùng form POST) -->
+    <div class="mt-4">
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="export_excel">
+            <button type="submit" class="btn btn-success">Xuất Excel định mức mẫu</button>
+        </form>
+        <a href="{% url 'order_norm_list' %}" class="btn btn-secondary">Quay lại danh sách</a>
+    </div>
+</div>
+{% endblock %}
